@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FDia</string>
+    <string name="app_description">Patch MyDialog debug and root detection</string>
+</resources>
