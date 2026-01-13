@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">FDia</string>
-    <string name="app_description">Patch MyDialog debug and root detection</string>
+    <string name="module_name">FDia</string>
+    <string name="module_description">Disable debug and root detection in MyDialog</string>
 </resources>
