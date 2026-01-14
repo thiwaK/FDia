@@ -20,7 +20,7 @@ FDia is an LSPosed/Xposed module that patches app checks to improve mod/tool com
 - Disable frida detection
 - Disable root detection
 - Disable developer mode detection
-- Disable integrity check
+- Bypass integrity check
 
 ### WOW
 
