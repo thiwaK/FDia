@@ -2,8 +2,12 @@ package lk.thiwak.fdia;
 
 import android.util.Log;
 
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.HttpURLConnection;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
@@ -22,7 +26,6 @@ public class Utilities {
     public void makeFunctionEmpty(ClassLoader classLoader, String className, String methodName) {
         try {
             Class<?> cls = XposedHelpers.findClass(className, classLoader);
-            Log.d(TAG, "makeFunctionEmpty: found class " + className);
             for (Method m : cls.getDeclaredMethods()) {
                 if (!m.getName().equals(methodName)) continue;
                 if (Modifier.isNative(m.getModifiers())) {
@@ -69,12 +72,14 @@ public class Utilities {
     public void hookBooleanReturn(ClassLoader classLoader, String className, String methodName, final boolean returnValue) {
         try {
             Class<?> cls = XposedHelpers.findClass(className, classLoader);
-            Log.d(TAG, "hookBooleanReturn: found class " + className + " for method " + methodName);
             // use getMethods() to include inherited/public methods as well
-            Method[] methods = cls.getMethods();
+            //Method[] methods = cls.getMethods();
+            Method[] methods = cls.getDeclaredMethods();
             int hookedCount = 0;
             for (final Method m : methods) {
                 if (!m.getName().equals(methodName)) continue;
+                m.setAccessible(true); // allow hooking private/protected/package methods
+
                 // only hook methods that return boolean/Boolean
                 Class<?> ret = m.getReturnType();
                 if (!(ret == boolean.class || ret == Boolean.class)) {
@@ -86,6 +91,7 @@ public class Utilities {
                     continue;
                 }
                 try {
+
                     // hook the Method object directly to preserve overload signature
                     XposedBridge.hookMethod(m, new XC_MethodHook() {
                         @Override
@@ -112,19 +118,63 @@ public class Utilities {
                     });
 
                     hookedCount++;
-                    Log.d(TAG, "Hooked boolean method: " + m);
+                    Log.d(TAG, "Hooked boolean method: " + methodName);
                 } catch (Throwable t) {
                     Log.e(TAG, "Failed to hook method: " + m, t);
                 }
             }
-            if (hookedCount == 0) {
-                Log.w(TAG, "No boolean methods named " + methodName + " found in " + className);
-            } else {
-                Log.i(TAG, "Total hooked methods: " + hookedCount);
-            }
+//            if (hookedCount == 0) {
+//                Log.w(TAG, "No boolean methods named " + methodName + " found in " + className);
+//            } else {
+//                Log.i(TAG, "Total hooked methods: " + hookedCount);
+//            }
         } catch (Throwable t) {
             Log.e(TAG, "hookBooleanReturn: failed for " + className + "#" + methodName, t);
         }
     }
 
+    public void logNetworkCommunication(ClassLoader classLoader){
+        XposedHelpers.findAndHookMethod(
+                "java.net.Socket", classLoader,
+                "getOutputStream", new XC_MethodHook() {
+                    @Override protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        OutputStream out = (OutputStream) param.getResult();
+                        OutputStream proxy = new FilterOutputStream(out) {
+                            @Override public void write(byte[] b, int off, int len) throws IOException {
+                                XposedBridge.log("Socket OUT: " + new String(b, off, len));
+                                super.write(b, off, len);
+                            }
+                        };
+                        param.setResult(proxy);
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod(
+                "java.net.HttpURLConnection", classLoader,
+                "getInputStream", new XC_MethodHook() {
+                    @Override protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        HttpURLConnection conn = (HttpURLConnection) param.thisObject;
+                        String url = conn.getURL().toString();
+                        int code = conn.getResponseCode();
+                        XposedBridge.log("HttpURLConnection: " + url + " => " + code);
+                        // To capture request body, hook getOutputStream()/connect() and buffer written bytes.
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod(
+                "okhttp3.RealCall", classLoader,
+                "execute", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object request = XposedHelpers.getObjectField(param.thisObject, "originalRequest");
+                        // request is okhttp3.Request — get URL, method, headers, body
+                        Object url = XposedHelpers.callMethod(request, "url");
+                        String urlStr = url.toString();
+                        Object method = XposedHelpers.callMethod(request, "method");
+                        XposedBridge.log("OKHTTP REQUEST: " + method + " " + urlStr);
+                        // read headers/body similarly via reflection if needed
+                    }
+                });
+
+    }
 }
