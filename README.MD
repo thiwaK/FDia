@@ -16,11 +16,22 @@ FDia is an LSPosed/Xposed module that patches app checks to improve mod/tool com
 ## Patches
 
 ### MyDialog
-- Disable Xposed detection
-- Disable frida detection
-- Disable root detection
-- Disable developer mode detection
-- Bypass integrity check
+
+- Google Play Integrity Check
+- Comprehensive Security Check
+- App Signature Check
+- Patch Xposed Detection
+- Root Management Apps Detection
+- Advanced Root Detection
+- Tamper Detection
+- Runtime Checks
+- Developer Options Detection
+- Hook Detection
+- Debugging Detection
+- SSL Class Modification Detection
+- SSL Pinning Bypass Detection
+
+
 
 ### WOW
 
