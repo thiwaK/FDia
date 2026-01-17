@@ -1,0 +1,40 @@
+name: Update Download Count Badge
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout badges branch
+        uses: actions/checkout@v4
+        with:
+          ref: badges
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Calculate downloads
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/downloads.py
+
+      - name: Commit badge file
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add downloads.json
+          git commit -m "Update total download count" || exit 0
+          git push origin badges
