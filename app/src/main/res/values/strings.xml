@@ -1,4 +1,0 @@
-<resources>
-    <string name="module_name">FDia</string>
-    <string name="module_description">Disable debug and root detection in MyDialog</string>
-</resources>
