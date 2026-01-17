@@ -3,12 +3,9 @@
   <br>
   <p>
     <a href="https://github.com/thiwaK/FDia/releases/latest">
-      <img src="https://img.shields.io/github/v/release/thiwaK/FDia?color=green&logoColor=green&label=Download&logo=DocuSign"
-           alt="Latest Release">
-    </a>
-    <a href="https://github.com/thiwaK/FDia/releases">
-      <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/thiwaK/FDia/badges/downloads.json&logo=Bookmeter&label=Counts&logoColor=yellow&color=yellow"
-           alt="Total Downloads">
+      <img src="https://img.shields.io/github/v/release/thiwaK/FDia?color=green&logoColor=green&label=Download&logo=android" alt="Latest Release">
+    </a> <a href="https://github.com/thiwaK/FDia/releases">
+      <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/thiwaK/FDia/badges/downloads.json&logo=Bookmeter&label=Counts&logoColor=yellow&color=yellow" alt="Total Downloads">
     </a>
   </p>
 </div>
